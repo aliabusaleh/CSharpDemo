@@ -1,0 +1,7 @@
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\bin\Debug\TaxiReservationProject.exe.config
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\bin\Debug\TaxiReservationProject.exe
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\bin\Debug\TaxiReservationProject.pdb
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\obj\Debug\TaxiReservationProject.csprojAssemblyReference.cache
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\obj\Debug\TaxiReservationProject.csproj.CoreCompileInputs.cache
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\obj\Debug\TaxiReservationProject.exe
+C:\Users\AliAS\Desktop\tutoials\c#\TaxiReservationProject\obj\Debug\TaxiReservationProject.pdb
