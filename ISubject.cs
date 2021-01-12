@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaxiReservationProject
 {
+    //prepare for the Observer using Interfaces
     class ISubject
     {
     }
