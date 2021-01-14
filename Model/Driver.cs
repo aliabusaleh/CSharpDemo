@@ -7,7 +7,7 @@ using TaxiReservationProject;
 
 namespace TaxiReservationProject.Model
 {
-    class Driver : Person
+    public class Driver : Person
     {
        public int LicencsID  {set; get;}
         public int Balance { set; get; }
@@ -20,11 +20,15 @@ namespace TaxiReservationProject.Model
             Avilabe = avilable;
 
         }
-      
-        public  void Update()
+
+        public  void Notify(object source, EventArgs args)
+        {
+            Console.WriteLine("Hello, I'm " + FirstName + " I've been notified from The Observer!!");
+        }
+       /* public  void Update()
         {
             Console.WriteLine("Hello, I'm "+FirstName+" I've been notified from The Observer!!");
-        }
+        }*/
     }
   
 }

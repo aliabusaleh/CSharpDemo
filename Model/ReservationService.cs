@@ -2,73 +2,96 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TaxiReservationProject.Model
 {
     enum infoData { STATUS, AMOUNT, DRIVER, PASSENGER, SRC, DST };
 
+
     class ReservationService
     {
         public List<Ride> RideQueue;
         public List<Driver> DriverQueue;// 
         public  List<Passenger> PassengerQueue; // waiting queue
+        private static object LOCK = new object();
         public ReservationService() {
             RideQueue = new List<Ride>();
             DriverQueue = new List<Driver>();
             PassengerQueue = new List<Passenger>();
         
         }
+        /* notifactaion Service (observer design pattern using Delagate and Events)
+         * 1- Define a delegate (signeture of a method in the subsrciber )
+         * 2- Event based on the delegate 
+         * 3- publish the event
+         */
+        public delegate void NewRideEventHandler(object source, EventArgs args);
+        public event NewRideEventHandler NewRide;
+
+        protected virtual void Notify()
+        {
+            lock (LOCK)
+            {
+                if (NewRide != null)
+                {   
+                            NewRide(this, EventArgs.Empty);   
+                }
+            }
+        }
 
         public bool addToRideQueue(Ride ride)
         {
-            try
+            lock (LOCK)
             {
-                RideQueue.Add(ride);
-                Notify();
-                return true;
+                try
+                {
+                    RideQueue.Add(ride);
+                    Notify();
+                    return true;
+                }
+                catch (Exception _e)
+                {
+                    Console.WriteLine("Error While adding to Ride Queue");
+                }
+                return false;
             }
-            catch (Exception _e)
-            {
-                Console.WriteLine("Error While adding to Ride Queue");
-            }
-            return false;
         }
 
-        private void Notify()
-        {
-            Console.WriteLine("Notifying My Clients!");
-            foreach(Driver driver in DriverQueue)
-            {
-                if(driver.Avilabe) driver.Update();
-            }
-        }
+      
 
         public bool addToPassengerQueue(Passenger passenger)
         {
-            try
+            lock (LOCK)
             {
-                PassengerQueue.Add(passenger);
-                return true;
+                try
+                {
+                    PassengerQueue.Add(passenger);
+                    return true;
+                }
+                catch (Exception _e)
+                {
+                    Console.WriteLine("Error While adding to Passenger Queue");
+                }
+                return false;
             }
-            catch (Exception _e)
-            {
-                Console.WriteLine("Error While adding to Passenger Queue");
-            }
-            return false;
         }
         public bool addToDriverQueue(Driver  driver)
         {
-            try
+            lock (LOCK)
             {
-                DriverQueue.Add(driver);
-                return true;
+                try
+                {
+                    DriverQueue.Add(driver);
+                    return true;
+                }
+                catch (Exception _e)
+                {
+                    Console.WriteLine("Error While adding to Driver Queue");
+                }
+                return false;
             }
-            catch (Exception _e)
-            {
-                Console.WriteLine("Error While adding to Driver Queue");
-            }
-            return false;
         }
         public string getRideInfo(int id, infoData type)
         {
@@ -100,66 +123,82 @@ namespace TaxiReservationProject.Model
 
         public bool StartRide(int id)
         {
-            foreach(Ride item in RideQueue)
+            lock (LOCK)
             {
-                if(item.RideID == id)
+                foreach (Ride item in RideQueue)
                 {
-                    item.RideStatus = RideStatusValues.UNDERPROGRESS;
-                    return true;
+                    if (item.RideID == id)
+                    {
+                        item.RideStatus = RideStatusValues.UNDERPROGRESS;
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
         public void stopRide(int id)
         {
-            foreach(Ride item in RideQueue)
+            lock (LOCK)
             {
-                if(item.RideID == id)
+                foreach (Ride item in RideQueue)
                 {
-                    item.RideStatus = RideStatusValues.FINISHED;
-                    item.RideDriver.Avilabe = true;
-                    return;
+                    if (item.RideID == id)
+                    {
+                        item.RideStatus = RideStatusValues.FINISHED;
+                        item.RideDriver.Avilabe = true;
+                        this.NewRide += item.RideDriver.Notify;
+                        return;
+                    }
                 }
             }
         }
 
         public bool deleteFromDriverQueue(int id)
         {
-            foreach(Driver driver in DriverQueue)
+            lock (LOCK)
             {
-                if(driver.UserID == id)
+                foreach (Driver driver in DriverQueue)
                 {
-                    DriverQueue.Remove(driver);
-                    return true;
+                    if (driver.UserID == id)
+                    {
+                        DriverQueue.Remove(driver);
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public bool deleteFromPassengerQueue(int id)
         {
-            foreach (Passenger passenger in PassengerQueue)
+            lock (LOCK)
             {
-                if (passenger.UserID == id)
+                foreach (Passenger passenger in PassengerQueue)
                 {
-                    PassengerQueue.Remove(passenger);
-                    return true;
+                    if (passenger.UserID == id)
+                    {
+                        PassengerQueue.Remove(passenger);
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public bool deleteFromRideQueue(int id)
         {
-            foreach (Ride ride in RideQueue)
+            lock (LOCK)
             {
-                if (ride.RideID == id)
+                foreach (Ride ride in RideQueue)
                 {
-                    RideQueue.Remove(ride);
-                    return true;
+                    if (ride.RideID == id)
+                    {
+                        RideQueue.Remove(ride);
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public bool emptyDriverQueue()
@@ -179,35 +218,40 @@ namespace TaxiReservationProject.Model
 
         public void matchRide()
         {
-            if (emptyDriverQueue() || emptyRideQueue()) return;
-            Ride ride = null ;
-            foreach(Ride item in RideQueue)
+           
+            lock (LOCK)
             {
-                if (!item.HasDriver)
+                if (emptyDriverQueue() || emptyRideQueue()) return;
+                Ride ride = null;
+                foreach (Ride item in RideQueue)
                 {
-                    ride = item;
-                    break;
+                    if (!item.HasDriver)
+                    {
+                        ride = item;
+                        break;
+                    }
                 }
-            }
-            if (ride == null) return;
+                if (ride == null) return;
 
-            Driver driver = null;
-            foreach(Driver item in DriverQueue)
-            {
-                if (item.Avilabe)
+                Driver driver = null;
+                foreach (Driver item in DriverQueue)
                 {
-                    driver = item;
-                    break;
+                    if (item.Avilabe)
+                    {
+                        driver = item;
+                        break;
+                    }
                 }
+                if (driver == null) return;
+
+                ride.RideDriver = driver;
+                driver.Avilabe = false;
+                ride.RideStatus = RideStatusValues.UNDERPROGRESS;
+                ride.HasDriver = true;
+                this.NewRide -= driver.Notify;
+                return;
             }
-            if (driver == null) return;
-
-            ride.RideDriver = driver;
-            driver.Avilabe= false;
-            ride.RideStatus = RideStatusValues.UNDERPROGRESS;
-            ride.HasDriver = true;
-            return;
-
+            
         }
 
         public void printPassengerQueue()
@@ -244,6 +288,31 @@ namespace TaxiReservationProject.Model
         }
 
 
+    }
+    class StatusChecker
+    {
+        private int invokeCount;
+        private int maxCount;
+
+        public StatusChecker(int count)
+        {
+            invokeCount = 0;
+            maxCount = count;
+        }
+
+        // This method is called by the timer delegate.
+        public void CheckStatus(Object stateInfo)
+        {
+            AutoResetEvent autoEvent = (AutoResetEvent)stateInfo;
+            invokeCount++;
+
+            if (invokeCount == maxCount)
+            {
+                // Reset the counter and signal the waiting thread.
+                invokeCount = 0;
+                autoEvent.Set();
+            }
+        }
     }
 
 }

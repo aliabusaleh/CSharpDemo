@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TaxiReservationProject.Model
 {
-    class Person
+    public class Person
     {
 
 
