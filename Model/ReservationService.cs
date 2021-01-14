@@ -30,13 +30,13 @@ namespace TaxiReservationProject.Model
         public delegate void NewRideEventHandler(object source, EventArgs args);
         public event NewRideEventHandler NewRide;
 
-        protected virtual void Notify()
+        protected virtual void NotifyDrivers()
         {
             lock (LOCK)
             {
                 if (NewRide != null)
                 {   
-                            NewRide(this, EventArgs.Empty);   
+                 NewRide(this, EventArgs.Empty);   
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace TaxiReservationProject.Model
                 try
                 {
                     RideQueue.Add(ride);
-                    Notify();
+                    NotifyDrivers();
                     return true;
                 }
                 catch (Exception _e)
