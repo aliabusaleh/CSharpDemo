@@ -14,7 +14,7 @@ namespace TaxiReservationProject
     {
         static void Main(string[] args)
         {
-            var config = new HttpSelfHostConfiguration("http://localhost:8080");
+           /* var config = new HttpSelfHostConfiguration("http://localhost:8080");
 
             config.Routes.MapHttpRoute(
                 "API Default", "api/{controller}/{id}",
@@ -25,7 +25,7 @@ namespace TaxiReservationProject
                 server.OpenAsync().Wait();
                 Console.WriteLine("Press Enter to quit.");
                 Console.ReadLine();
-            }
+            }*/
             Passenger passenger = new Passenger("ali", "abuasleh", "ali98", "132");
             Driver driver = new Driver(123, "ali", "abuasleh", "ali98", "132", 10, true);
             Driver driver2 = new Driver(123, "test2", "abuasleh", "ali98", "132", 10, true);
