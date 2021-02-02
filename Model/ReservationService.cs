@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace TaxiReservationProject.Model
 {
@@ -83,6 +84,7 @@ namespace TaxiReservationProject.Model
             {
                 try
                 {
+                    driver.Avilabe = true;
                     DriverQueue.Add(driver);
                     return true;
                 }
@@ -136,17 +138,32 @@ namespace TaxiReservationProject.Model
                 return false;
             }
         }
-        public void stopRide(int id)
+        public async Task stopRide(int id)
         {
-            lock (LOCK)
-            {
+            
+                await Task.Delay(5 * 1000);
                 foreach (Ride item in RideQueue)
                 {
-                    if (item.RideID == id)
+                    if (item.RideID == id && item.RideStatus == RideStatusValues.UNDERPROGRESS)
                     {
                         item.RideStatus = RideStatusValues.FINISHED;
                         item.RideDriver.Avilabe = true;
-                        this.NewRide += item.RideDriver.Notify;
+                        this.NewRide += item.RideDriver.Notifyme;
+                        return;
+                    }
+                }
+            
+        }
+        public void DeleteFinished(object sender, ElapsedEventArgs e)
+        {
+            Console.WriteLine("Deleteing finished Rides");
+            lock (LOCK)
+            {
+                foreach (Ride item in this.RideQueue)
+                {
+                    if (item.RideStatus == RideStatusValues.FINISHED)
+                    {
+                        RideQueue.Remove(item);
                         return;
                     }
                 }
@@ -218,7 +235,8 @@ namespace TaxiReservationProject.Model
 
         public void matchRide()
         {
-           
+            Console.WriteLine("Matching Rides!!");
+            printRideQueue();
             lock (LOCK)
             {
                 if (emptyDriverQueue() || emptyRideQueue()) return;
@@ -248,12 +266,23 @@ namespace TaxiReservationProject.Model
                 driver.Avilabe = false;
                 ride.RideStatus = RideStatusValues.UNDERPROGRESS;
                 ride.HasDriver = true;
-                this.NewRide -= driver.Notify;
+                this.NewRide -= driver.Notifyme;
+               
                 return;
+
             }
+           
             
         }
 
+
+
+        //matchRide Overloading for the timer 
+        public void matchRide(object sender, ElapsedEventArgs e)
+        {
+            this.matchRide();
+            Console.WriteLine("inside periodic one");
+        }
         public void printPassengerQueue()
         {
             Console.WriteLine("Passenger List: ");
