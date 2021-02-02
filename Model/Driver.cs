@@ -21,7 +21,7 @@ namespace TaxiReservationProject.Model
 
         }
 
-        public void Notify(object source, EventArgs args)
+        public void Notifyme(object source, EventArgs args)
         {
             Console.WriteLine("Hello, I'm " + FirstName + " I've been notified from The Observer!!");
         }
